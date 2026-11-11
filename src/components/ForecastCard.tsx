@@ -1,28 +1,55 @@
-import type { ForecastDay, Unit } from '../types/weather';
+import { useId } from 'react';
+import { formatForecastDate } from '../lib/dateTime';
 import { formatTemperature } from '../lib/temperature';
-import { getWeatherIcon, getWeatherLabel } from '../lib/weatherCodes';
-import { getDayLabel, getShortDate } from '../lib/format';
+import { getWeatherDescription, getWeatherIcon } from '../lib/weatherCode';
+import type { ForecastDay, Unit } from '../types/weather';
 
 interface ForecastCardProps {
   day: ForecastDay;
-  index: number;
   unit: Unit;
+  precipitationProbability?: number | null;
 }
 
-/** Card de um dia da previsão. */
-export default function ForecastCard({ day, index, unit }: ForecastCardProps) {
+export default function ForecastCard({
+  day,
+  unit,
+  precipitationProbability = null,
+}: ForecastCardProps) {
+  const headingId = useId();
+  const condition = getWeatherDescription(day.weatherCode);
+
   return (
-    <li className="flex flex-col items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-md">
-      <p className="font-semibold">{getDayLabel(day.date, index)}</p>
-      <p className="text-xs text-white/50">{getShortDate(day.date)}</p>
-      <span aria-hidden="true" className="text-3xl" title={getWeatherLabel(day.weatherCode)}>
-        {getWeatherIcon(day.weatherCode)}
-      </span>
-      <p className="text-sm">
-        <span className="font-semibold">{formatTemperature(day.max, unit)}</span>{' '}
-        <span className="text-white/50">{formatTemperature(day.min, unit)}</span>
-      </p>
-      <p className="text-xs text-accent-400">💧 {day.precipitationProbability}%</p>
-    </li>
+    <article
+      aria-labelledby={headingId}
+      className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-4 shadow-glass backdrop-blur-md"
+    >
+      <h3 className="text-sm font-semibold capitalize text-white" id={headingId}>
+        <time dateTime={day.date}>{formatForecastDate(day.date, 'pt-BR')}</time>
+      </h3>
+      <div className="mt-3 flex items-center gap-2">
+        <span aria-hidden="true" className="text-3xl">
+          {getWeatherIcon(day.weatherCode)}
+        </span>
+        <p className="text-sm text-white/75">{condition}</p>
+      </div>
+      <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+        <div>
+          <dt className="text-white/55">Máx.</dt>
+          <dd className="font-medium text-white">{formatTemperature(day.maxTemperatureC, unit)}</dd>
+        </div>
+        <div>
+          <dt className="text-white/55">Mín.</dt>
+          <dd className="font-medium text-white">{formatTemperature(day.minTemperatureC, unit)}</dd>
+        </div>
+        <div className="col-span-2">
+          <dt className="text-white/55">Probabilidade de chuva</dt>
+          <dd className="font-medium text-white">
+            {precipitationProbability === null
+              ? 'Indisponível'
+              : `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(precipitationProbability)}%`}
+          </dd>
+        </div>
+      </dl>
+    </article>
   );
 }

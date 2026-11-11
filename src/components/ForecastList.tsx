@@ -4,18 +4,32 @@ import ForecastCard from './ForecastCard';
 interface ForecastListProps {
   forecast: ForecastDay[];
   unit: Unit;
+  precipitationProbabilityByDate?: Readonly<Record<string, number | null>>;
 }
 
-/** Grid responsivo com a previsão de 5 dias. */
-export default function ForecastList({ forecast, unit }: ForecastListProps) {
+export default function ForecastList({
+  forecast,
+  unit,
+  precipitationProbabilityByDate,
+}: ForecastListProps) {
   return (
-    <section aria-label="Previsão de 5 dias">
-      <h2 className="mb-4 text-xl font-bold">Previsão de 5 dias</h2>
-      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {forecast.map((day, index) => (
-          <ForecastCard key={day.date} day={day} index={index} unit={unit} />
-        ))}
-      </ul>
+    <section aria-label="Previsão para cinco dias">
+      {forecast.length === 0 ? (
+        <p className="text-sm text-white/70" role="status">
+          Previsão indisponível.
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {forecast.map((day) => (
+            <ForecastCard
+              day={day}
+              key={day.date}
+              precipitationProbability={precipitationProbabilityByDate?.[day.date] ?? null}
+              unit={unit}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
